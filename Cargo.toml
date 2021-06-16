@@ -1,3 +1,9 @@
+[workspace]
+members = [
+  "macro",
+  "sys",
+]
+
 [package]
 authors = ["Tangram <root@tangram.xyz"]
 description = "Write Erlang and Elixir NIFs in Rust."
