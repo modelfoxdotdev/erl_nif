@@ -1,0 +1,16 @@
+[package]
+edition = "2018"
+license = "MIT"
+name = "erl_nif_macro"
+publish = true
+version = "0.1.0"
+
+[lib]
+path = "lib.rs"
+proc-macro = true
+
+[dependencies]
+itertools = "0.10"
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "1", features = ["full"] }
