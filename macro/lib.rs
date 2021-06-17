@@ -12,7 +12,7 @@ pub fn init(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 struct InitArgs {
 	name: syn::LitStr,
 	funcs: syn::ExprArray,
-	load: syn::Ident,
+	load: Option<syn::Ident>,
 }
 
 impl syn::parse::Parse for InitArgs {
@@ -33,7 +33,6 @@ impl syn::parse::Parse for InitArgs {
 		}
 		let name = name.ok_or_else(|| syn::Error::new(input.span(), "\"name\" is required"))?;
 		let funcs = funcs.ok_or_else(|| syn::Error::new(input.span(), "\"funcs\" is required"))?;
-		let load = load.ok_or_else(|| syn::Error::new(input.span(), "\"load\" is required"))?;
 		Ok(InitArgs { name, funcs, load })
 	}
 }
@@ -43,32 +42,37 @@ fn init_impl(input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::TokenS
 	let name = &input.name;
 	let funcs = &input.funcs;
 	let num_of_funcs = funcs.elems.len();
-	let load = &input.load;
-	let load = quote! {{
-		unsafe extern "C" fn _load(env: *mut erl_nif::sys::ErlNifEnv, priv_data: *mut *mut std::os::raw::c_void, load_info: erl_nif::sys::ERL_NIF_TERM) -> std::os::raw::c_int {
-			let env = erl_nif::Env::from_raw(env);
-			let load_info = erl_nif::Term::from_raw(env, load_info);
-			let result = std::panic::catch_unwind(|| {
-				#load(env, load_info)
-			});
-			let result = match result {
-				Ok(result) => result,
-				Err(_) => {
-					env.raise_exception("A panic occurred.");
-					return -1;
-				}
-			};
-			match result {
-				Ok(_) => {},
-				Err(error) => {
-					env.raise_exception(&error.to_string());
-					return -1;
-				},
-			};
-			0
-		}
-		Some(_load)
-	}};
+	let load = input
+		.load
+		.as_ref()
+		.map(|load| quote! {{
+			unsafe extern "C" fn _load(env: *mut erl_nif::sys::ErlNifEnv, priv_data: *mut *mut std::os::raw::c_void, load_info: erl_nif::sys::ERL_NIF_TERM) -> std::os::raw::c_int {
+				let env = erl_nif::Env::from_raw(env);
+				let load_info = erl_nif::Term::from_raw(env, load_info);
+				let result = std::panic::catch_unwind(|| {
+					#load(env, load_info)
+				});
+				let result = match result {
+					Ok(result) => result,
+					Err(_) => {
+						env.raise_exception("A panic occurred.");
+						return -1;
+					}
+				};
+				match result {
+					Ok(_) => {},
+					Err(error) => {
+						env.raise_exception(&error.to_string());
+						return -1;
+					},
+				};
+				0
+			}
+			Some(_load)
+		}})
+		.unwrap_or_else(|| quote! {
+			None
+		});
 	let entry = quote! {
 		static ENTRY: erl_nif::Entry = erl_nif::Entry::new(erl_nif::sys::ErlNifEntry {
 			major: erl_nif::sys::ERL_NIF_MAJOR_VERSION,
