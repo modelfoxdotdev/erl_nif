@@ -1,6 +1,6 @@
 # erl_nif
 
-This crate provides bindings to the [erl_nif](https://erlang.org/doc/man/erl_nif.html) API, making it easy to write native extensions for Elixir in Rust. The `erl_nif_sys` crate provides direct bindings to the erl_nif C API, while the `erl_nif` crate provides high level bindings.
+This crate provides bindings to the [erl_nif](https://erlang.org/doc/man/erl_nif.html) C API, making it easy to write native extensions for Erlang and Elixir in Rust.
 
 ## Example
 
@@ -13,7 +13,7 @@ erl_nif::init!(
 );
 
 #[erl_nif::nif]
-fn add(a: u64, b: u64) -> Result<u64, ()> {
+fn add(a: u64, b: u64) -> Result<u64, String> {
   Ok(a + b)
 }
 ```
