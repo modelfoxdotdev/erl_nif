@@ -7,7 +7,7 @@ mod serde;
 pub mod term;
 
 pub use self::{
-	convert::{FromErlNif, ToErlNif},
+	convert::{FromErlNif, IntoErlNif},
 	entry::Entry,
 	env::Env,
 	error::{Error, Result},

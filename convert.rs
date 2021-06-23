@@ -5,8 +5,8 @@ use crate::{
 use num::{FromPrimitive, ToPrimitive};
 
 #[allow(clippy::wrong_self_convention, clippy::upper_case_acronyms)]
-pub trait ToErlNif<'a>: 'a {
-	fn to_erl_nif(self, env: Env<'a>) -> Result<Term<'a>>;
+pub trait IntoErlNif<'a>: 'a {
+	fn into_erl_nif(self, env: Env<'a>) -> Result<Term<'a>>;
 }
 
 #[allow(clippy::wrong_self_convention, clippy::upper_case_acronyms)]
@@ -14,8 +14,8 @@ pub trait FromErlNif<'a>: 'a + Sized {
 	fn from_erl_nif(term: Term<'a>) -> Result<Self>;
 }
 
-impl<'a> ToErlNif<'a> for () {
-	fn to_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for () {
+	fn into_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
 		Ok(Atom::new(env, "nil")?.term())
 	}
 }
@@ -30,8 +30,8 @@ impl<'a> FromErlNif<'a> for () {
 	}
 }
 
-impl<'a> ToErlNif<'a> for bool {
-	fn to_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for bool {
+	fn into_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
 		let atom = match self {
 			true => "true",
 			false => "false",
@@ -54,8 +54,8 @@ impl<'a> FromErlNif<'a> for bool {
 
 macro_rules! impl_to_from_for_integer_type {
 	($ty:ty) => {
-		impl<'a> ToErlNif<'a> for $ty {
-			fn to_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
+		impl<'a> IntoErlNif<'a> for $ty {
+			fn into_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
 				let value =
 					<$ty>::to_i64(&self).ok_or_else(|| Error::message("integer out of bounds"))?;
 				let integer = Integer::new(env, value);
@@ -87,8 +87,8 @@ impl_to_from_for_integer_type!(i64);
 
 macro_rules! impl_to_from_for_float_type {
 	($ty:ty) => {
-		impl<'a> ToErlNif<'a> for $ty {
-			fn to_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
+		impl<'a> IntoErlNif<'a> for $ty {
+			fn into_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
 				let value =
 					<$ty>::to_f64(&self).ok_or_else(|| Error::message("float out of bounds"))?;
 				let float = Float::new(env, value);
@@ -110,9 +110,9 @@ macro_rules! impl_to_from_for_float_type {
 impl_to_from_for_float_type!(f32);
 impl_to_from_for_float_type!(f64);
 
-impl<'a> ToErlNif<'a> for char {
-	fn to_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
-		self.to_string().to_erl_nif(env)
+impl<'a> IntoErlNif<'a> for char {
+	fn into_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
+		self.to_string().into_erl_nif(env)
 	}
 }
 
@@ -132,14 +132,14 @@ impl<'a> FromErlNif<'a> for char {
 	}
 }
 
-impl<'a> ToErlNif<'a> for &'a str {
-	fn to_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for &'a str {
+	fn into_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
 		Ok(BinaryTerm::from_str(env, self)?.term())
 	}
 }
 
-impl<'a> ToErlNif<'a> for std::string::String {
-	fn to_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for std::string::String {
+	fn into_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
 		Ok(BinaryTerm::from_str(env, &self)?.term())
 	}
 }
@@ -162,14 +162,14 @@ impl<'a> FromErlNif<'a> for std::string::String {
 	}
 }
 
-impl<'a, T> ToErlNif<'a> for Option<T>
+impl<'a, T> IntoErlNif<'a> for Option<T>
 where
-	T: ToErlNif<'a>,
+	T: IntoErlNif<'a>,
 {
-	fn to_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
+	fn into_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
 		match self {
 			None => Ok(Atom::new(env, "nil")?.term()),
-			Some(term) => Ok(term.to_erl_nif(env)?),
+			Some(term) => Ok(term.into_erl_nif(env)?),
 		}
 	}
 }
@@ -194,14 +194,14 @@ where
 	}
 }
 
-impl<'a, T> ToErlNif<'a> for Vec<T>
+impl<'a, T> IntoErlNif<'a> for Vec<T>
 where
-	T: ToErlNif<'a>,
+	T: IntoErlNif<'a>,
 {
-	fn to_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
+	fn into_erl_nif(self, env: Env<'a>) -> Result<Term<'a>> {
 		let terms = self
 			.into_iter()
-			.map(|value| value.to_erl_nif(env))
+			.map(|value| value.into_erl_nif(env))
 			.collect::<Result<Vec<_>>>()?;
 		let list = List::new(env, terms)?;
 		Ok(list.term())
@@ -220,8 +220,8 @@ where
 	}
 }
 
-impl<'a> ToErlNif<'a> for Term<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for Term<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self)
 	}
 }
@@ -232,8 +232,8 @@ impl<'a> FromErlNif<'a> for Term<'a> {
 	}
 }
 
-impl<'a> ToErlNif<'a> for Atom<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for Atom<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self.term())
 	}
 }
@@ -244,8 +244,8 @@ impl<'a> FromErlNif<'a> for Atom<'a> {
 	}
 }
 
-impl<'a> ToErlNif<'a> for BinaryTerm<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for BinaryTerm<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self.term())
 	}
 }
@@ -256,8 +256,8 @@ impl<'a> FromErlNif<'a> for BinaryTerm<'a> {
 	}
 }
 
-impl<'a> ToErlNif<'a> for BitString<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for BitString<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self.term())
 	}
 }
@@ -268,8 +268,8 @@ impl<'a> FromErlNif<'a> for BitString<'a> {
 	}
 }
 
-impl<'a> ToErlNif<'a> for Float<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for Float<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self.term())
 	}
 }
@@ -280,8 +280,8 @@ impl<'a> FromErlNif<'a> for Float<'a> {
 	}
 }
 
-impl<'a> ToErlNif<'a> for Fun<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for Fun<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self.term())
 	}
 }
@@ -292,8 +292,8 @@ impl<'a> FromErlNif<'a> for Fun<'a> {
 	}
 }
 
-impl<'a> ToErlNif<'a> for Integer<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for Integer<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self.term())
 	}
 }
@@ -304,8 +304,8 @@ impl<'a> FromErlNif<'a> for Integer<'a> {
 	}
 }
 
-impl<'a> ToErlNif<'a> for List<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for List<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self.term())
 	}
 }
@@ -316,8 +316,8 @@ impl<'a> FromErlNif<'a> for List<'a> {
 	}
 }
 
-impl<'a> ToErlNif<'a> for Map<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for Map<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self.term())
 	}
 }
@@ -328,8 +328,8 @@ impl<'a> FromErlNif<'a> for Map<'a> {
 	}
 }
 
-impl<'a> ToErlNif<'a> for Pid<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for Pid<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self.term())
 	}
 }
@@ -340,8 +340,8 @@ impl<'a> FromErlNif<'a> for Pid<'a> {
 	}
 }
 
-impl<'a> ToErlNif<'a> for Port<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for Port<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self.term())
 	}
 }
@@ -352,8 +352,8 @@ impl<'a> FromErlNif<'a> for Port<'a> {
 	}
 }
 
-// impl<T> ToErlNif for ResourceTerm<T> {
-// 	fn to_erl_nif(self, _env: Env) -> Result<Term> {
+// impl<T> IntoErlNif for ResourceTerm<T> {
+// 	fn into_erl_nif(self, _env: Env) -> Result<Term> {
 // 		Ok(self.term())
 // 	}
 // }
@@ -364,8 +364,8 @@ impl<'a> FromErlNif<'a> for Port<'a> {
 // 	}
 // }
 
-impl<'a> ToErlNif<'a> for Tuple<'a> {
-	fn to_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
+impl<'a> IntoErlNif<'a> for Tuple<'a> {
+	fn into_erl_nif(self, _env: Env<'a>) -> Result<Term<'a>> {
 		Ok(self.term())
 	}
 }

@@ -1,6 +1,6 @@
 use crate::{
 	sys::{enif_raise_exception, ErlNifEnv, ERL_NIF_TERM},
-	ToErlNif,
+	IntoErlNif,
 };
 use std::marker::PhantomData;
 
@@ -18,7 +18,7 @@ impl<'a> Env<'a> {
 
 	pub fn raise_exception(&self, message: &str) -> ERL_NIF_TERM {
 		let message = message
-			.to_erl_nif(*self)
+			.into_erl_nif(*self)
 			.expect("failed to create exception message");
 		unsafe { enif_raise_exception(self.raw(), message.raw()) }
 	}

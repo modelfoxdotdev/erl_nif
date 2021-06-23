@@ -173,7 +173,7 @@ fn nif_impl(input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::TokenSt
 				let argv = unsafe { std::slice::from_raw_parts(argv, argc as usize) };
 				#(#from_erl_nif_statements)*
 				let output = nif_impl(env, #(#args),*).map_err(|error| erl_nif::Error::message(error.to_string()))?;
-				let output = erl_nif::ToErlNif::to_erl_nif(output, env)?;
+				let output = erl_nif::IntoErlNif::into_erl_nif(output, env)?;
 				Ok(output)
 			});
 			let result = match result {
