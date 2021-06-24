@@ -8,7 +8,7 @@ license = "MIT"
 name = "erl_nif_macro"
 publish = true
 repository = "https://github.com/tangramxyz/erl_nif"
-version = "0.3.0"
+version = "0.3.1"
 
 [lib]
 path = "lib.rs"
