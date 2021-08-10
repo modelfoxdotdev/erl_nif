@@ -1,13 +1,13 @@
 [package]
-authors = ["Tangram <root@tangram.xyz"]
+authors = ["Tangram <root@tangram.dev"]
 description = "Write Erlang and Elixir NIFs in Rust."
 documentation = "https://docs.rs/erl_nif_sys"
 edition = "2018"
-homepage = "https://github.com/tangramxyz/erl_nif"
+homepage = "https://github.com/tangramdotdev/erl_nif"
 license = "MIT"
 name = "erl_nif_sys"
 publish = true
-repository = "https://github.com/tangramxyz/erl_nif"
+repository = "https://github.com/tangramdotdev/erl_nif"
 version = "0.3.1"
 
 [lib]
