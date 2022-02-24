@@ -2,7 +2,7 @@ pub mod convert;
 pub mod entry;
 pub mod env;
 pub mod error;
-#[cfg(feature = "serde_1")]
+#[cfg(feature = "serde")]
 mod serde;
 pub mod term;
 

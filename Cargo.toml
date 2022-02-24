@@ -24,4 +24,4 @@ path = "lib.rs"
 erl_nif_macro = { version = "0.4", path = "macro" }
 erl_nif_sys = { version = "0.4", path = "sys" }
 num = "0.4"
-serde = { version = "1" }
+serde = { version = "1", optional = true }
