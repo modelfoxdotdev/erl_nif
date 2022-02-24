@@ -8,10 +8,10 @@ license = "MIT"
 name = "erl_nif_sys"
 publish = true
 repository = "https://github.com/tangramdotdev/erl_nif"
-version = "0.3.1"
+version = "0.4.0"
 
 [lib]
 path = "lib.rs"
 
 [dependencies]
-erl_nif_macro = { version = "0.3", path = "../macro" }
+erl_nif_macro = { version = "0.4", path = "../macro" }

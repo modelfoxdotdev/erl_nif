@@ -50,7 +50,7 @@ impl<T> ResourceType<T> {
 				ErlNifResourceFlags::ERL_NIF_RT_CREATE,
 				tried.as_mut_ptr(),
 			);
-			if pointer == std::ptr::null_mut() {
+			if pointer.is_null() {
 				return Err(Error::message("failed to create resource type"));
 			}
 			let tried = tried.assume_init();
