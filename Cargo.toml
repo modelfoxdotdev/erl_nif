@@ -15,13 +15,13 @@ license = "MIT"
 name = "erl_nif"
 publish = true
 repository = "https://github.com/tangramdotdev/erl_nif"
-version = "0.4.0"
+version = "0.5.0"
 
 [lib]
 path = "lib.rs"
 
 [dependencies]
-erl_nif_macro = { version = "0.4", path = "macro" }
-erl_nif_sys = { version = "0.4", path = "sys" }
+erl_nif_macro = { version = "0.5", path = "macro" }
+erl_nif_sys = { version = "0.5", path = "sys" }
 num = "0.4"
 serde = { version = "1", optional = true }
